@@ -1,0 +1,24 @@
+services:
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: weather
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5432:5432
+  backend:
+    build: ./backend
+    environment:
+      API_KEY: ${API_KEY:?Set API_KEY in a local .env file before starting Docker Compose.}
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+
+  frontend:
+    build: ./frontend 
+    ports:
+      - "8080:80"

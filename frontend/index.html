@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <style>
+    :root {
+      --shadow: 0 8px 30px rgba(0,0,0,0.35);
+      --bg: #0b1220;
+      --card: rgba(255,255,255,0.06);
+      --card2: rgba(255,255,255,0.09);
+      --text: #e9eefc;
+      --muted: rgba(233,238,252,0.7);
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --border: rgba(255,255,255,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 500px at 20% 0%, rgba(59,130,246,0.25), transparent 60%),
+                  radial-gradient(900px 400px at 90% 10%, rgba(34,197,94,0.18), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+    }
+    .top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(6px);
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    input {
+      flex: 1;
+      min-width: 220px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      color: var(--text);
+      outline: none;
+    }
+    input:focus {
+      border-color: rgba(59,130,246,0.55);
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    }
+    button {
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(59,130,246,0.25);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: rgba(59,130,246,0.35); }
+    .pill {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    a.city {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      padding: 8px 10px;
+      border-radius: 999px;
+      margin: 4px 0;
+      display: inline-block;
+    }
+    a.city:hover { background: rgba(255,255,255,0.08); }
+
+    #status {
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    .twoCards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 720px) {
+      .twoCards { grid-template-columns: 1fr; }
+    }
+
+    .mini {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .boxGreen { border-left: 6px solid var(--green); }
+    .boxBlue { border-left: 6px solid var(--blue); }
+
+    .hourly {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .tableWrap {
+      margin-top: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    table.table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .sectionTitle {
+      padding: 14px 16px 8px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.2px;
+    }
+    .table th, .table td { padding: 12px 14px; }
+    table.table thead th {
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 13px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    table.table tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    table.table tbody tr:last-child {
+      border-bottom: none;
+    }
+    table.table tbody td {
+      font-size: 14px;
+      color: var(--text);
+    }
+    table.table tbody tr:hover {
+      background: rgba(59,130,246,0.10);
+    }
+
+    .hourRow {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      font-size: 14px;
+    }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Weather Dashboard</h1>
+        <div class="subtitle">Hourly forecast + averages stored in PostgreSQL</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <input id="cityInput" type="text" placeholder="Search city (e.g. London)" onkeydown="handleCityKeyDown(event)">
+        <button onclick="searchCity()">Search</button>
+      </div>
+
+      <div class="pill">
+        <strong style="color: var(--text);">Quick cities:</strong>
+        <span>
+          <a class="city" href="#" onclick="selectCity('Aachen'); return false;">Aachen</a>
+          <a class="city" href="#" onclick="selectCity('Berlin'); return false;">Berlin</a>
+          <a class="city" href="#" onclick="selectCity('Paris'); return false;">Paris</a>
+          <a class="city" href="#" onclick="selectCity('Madrid'); return false;">Madrid</a>
+          <a class="city" href="#" onclick="selectCity('Rome'); return false;">Rome</a>
+        </span>
+      </div>
+
+      <div id="status" class="muted"></div>
+
+      <div style="margin-top: 14px;">
+        <strong style="color: var(--text);">History:</strong>
+        <div id="history" style="margin-top: 8px;"></div>
+      </div>
+
+      <div style="margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,0.03);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div>
+            <div style="font-weight: 800;">OpenWeather API</div>
+            <div id="apiHealthText" style="color: var(--muted); font-size: 13px; margin-top: 4px;">Checking...</div>
+          </div>
+          <div id="apiHealthEmoji" style="font-size: 26px;">⏳</div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="result" style="margin-top: 14px;"></div>
+  </div>
+
+  <script>
+    function handleCityKeyDown(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        searchCity();
+      }
+    }
+  </script>
+
+<script>
+let currentCity = "Aachen";
+
+
+function selectCity(city) {
+    currentCity = city;
+    document.getElementById("cityInput").value = city;
+    loadData().then(() => loadHistory());
+}
+
+
+async function searchCity() {
+    const city = document.getElementById("cityInput").value.trim();
+    if (!city) return;
+    currentCity = city;
+    await loadData();
+    await loadHistory();
+}
+
+
+async function loadHistory() {
+    const res = await fetch("http://localhost:8000/history");
+    const data = await res.json();
+
+    const historyEl = document.getElementById("history");
+    const cities = data.cities || [];   // use the data if exists, otherwise default to an empty array
+
+    if (cities.length === 0) {
+        historyEl.textContent = "No history yet";
+        return;
+    }
+
+    historyEl.innerHTML = cities
+        .map(c => {
+            const safe = c.replaceAll("'", "\\'");
+            return `<a href="#" onclick="selectCity('${safe}'); return false;" style="margin-right: 10px; text-decoration: none; color: var(--text); border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 2px; font-weight: 600;">${c}</a>`;
+        })
+        .join('');
+}
+
+async function loadData() {
+    const res = await fetch(`http://localhost:8000/data?city=${encodeURIComponent(currentCity)}`);
+    const data = await res.json();
+
+    const statusEl = document.getElementById("status");
+    if (statusEl) {
+        // If the backend reports an API/city problem, show the real message
+        if (data.apiStatus === "error") {
+            statusEl.textContent = (data.message || "API not available");
+        } else {
+            statusEl.textContent = data.updated ? "✅ Data updated" : "ℹ️ No new changes";
+        }
+    }
+
+    // If we have an error, do not build the full table.
+    if (data.apiStatus === "error") {
+        const resultEl = document.getElementById("result");
+        if (resultEl) {
+            resultEl.innerHTML = `
+              <div style="padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,0.04);">
+                <div style="font-weight: 900; margin-bottom: 8px;">Sorry</div>
+                <div style="color: var(--muted);">
+                  ${data.message || "API not available right now. Please try later."}
+                </div>
+              </div>
+            `;
+        }
+        return;
+    }
+
+    let html = `
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="background: #4CAF50; color: white; padding: 20px; border-radius: 10px; text-align: center; flex: 1;">
+                <h2>Morning (8-15h)</h2>
+                <h1>${data.avg_8_15_temp} &#8451; </h1>  
+            </div>
+            <div style="background: #2196F3; color: white; padding: 20px; border-radius: 10px; text-align: center; flex: 1;">
+                <h2>Evening (16-22h)</h2>
+                <h1>${data.avg_16_22_temp} &#8451; </h1>
+            </div>
+        </div>
+    `;
+
+    html += `
+      <div class="sectionTitle">Hourly Forecast</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Temp</th>
+            <th>Pressure</th>
+            <th>Humidity</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    data.hourly.slice(-12).forEach(item => {
+        html += `
+          <tr>
+            <td>${item.time}</td>
+            <td>${item.temp.toFixed(1)}°C</td>
+            <td>${item.pressure} hPa</td>
+            <td>${item.humidity}%</td>
+          </tr>
+        `;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    `;
+
+    html += `
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px;">
+        <div style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 16px; padding: 16px;">
+          <div style="color: var(--muted); font-size: 13px;">Overall Avg Temp</div>
+          <div style="font-size: 22px; font-weight: 900;">${data.avg_temp.toFixed(1)} &#8451;</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 16px; padding: 16px;">
+          <div style="color: var(--muted); font-size: 13px;">Overall Avg Pressure</div>
+          <div style="font-size: 22px; font-weight: 900;">${data.avg_pressure.toFixed(0)} hPa</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 16px; padding: 16px;">
+          <div style="color: var(--muted); font-size: 13px;">Overall Avg Humidity</div>
+          <div style="font-size: 22px; font-weight: 900;">${data.avg_humidity.toFixed(0)}%</div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("result").innerHTML = html;
+}
+
+async function updateApiHealth() {
+    try {
+        const r = await fetch("http://localhost:8000/health", { cache: "no-store" });
+        const data = await r.json();
+        const textEl = document.getElementById("apiHealthText");
+        const emojiEl = document.getElementById("apiHealthEmoji");
+
+        if (!textEl || !emojiEl) return;
+
+        if (data.available) {
+            emojiEl.textContent = "🟢";
+            textEl.textContent = "API available";
+        } else {
+            emojiEl.textContent = "🔴";
+            textEl.textContent = data.message ? data.message : "API not available";
+        }
+    } catch (e) {
+        const textEl = document.getElementById("apiHealthText");
+        const emojiEl = document.getElementById("apiHealthEmoji");
+        if (emojiEl) emojiEl.textContent = "🔴";
+        if (textEl) textEl.textContent = "API not available";
+    }
+}
+
+window.onload = async function () {
+    document.getElementById("cityInput").value = currentCity;
+    await loadData();
+    await loadHistory();
+    await updateApiHealth();
+
+    // Auto refresh every 10 minutes (reload both weather and history)
+
+
+    // Auto refresh every 10 minutes (reload both weather and history)
+    setInterval(async () => {
+        await loadData();
+        await loadHistory();
+    }, 600000);
+};
+</script>
+
+</body>
+</html>
